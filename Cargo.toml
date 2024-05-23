@@ -14,3 +14,4 @@ flate2 = "1.0.29"
 deflate = "1.0.0"
 inflate = "0.4.5"
 serde_json = "1.0.116"
+clap = { version = "4.5.4", features = ["derive"] }

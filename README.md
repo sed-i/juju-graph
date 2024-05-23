@@ -27,5 +27,10 @@ juju-graph < bundle.yaml
 cargo install --git https://github.com/sed-i/juju-graph
 ```
 
+## Render svg from graphviz
+```bash
+juju-graph < bundle.yaml | dot -Tsvg > bundle.svg
+```
+
 ## References
 - https://github.com/mermaid-js/mermaid-live-editor/discussions/1291

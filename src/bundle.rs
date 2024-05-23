@@ -32,6 +32,31 @@ impl Bundle {
         format!("graph LR\n{}", mermaid)
     }
 
+    pub fn to_graphviz(&self) -> String {
+        let mut output = String::new();
+        for [rel1, rel2] in &self.relations {
+            let mut s1 = rel1.split(':');
+            let app1 = s1.next().unwrap();
+            let relname1 = s1.next().unwrap();
+
+            let mut s2 = rel2.split(':');
+            let app2 = s2.next().unwrap();
+            let relname2 = s2.next().unwrap();
+
+            // If both charms have the same relation name, render it only once
+            let edge = if relname1 == relname2 {
+                relname1.to_string()
+            } else {
+                format!("{}:{}", relname1, relname2)
+            };
+
+            output.push_str(&format!("\"{}\" -- \"{}\" [label=\"{}\"]\n", app1, app2, edge));
+        }
+
+        // Could add rankdir=LR at the top, but diagram looks better without it.
+        format!("graph {{\n{}}}", output)
+    }
+
     pub fn to_img_url(&self) -> String {
         format!("https://mermaid.ink/img/{}", self.to_mermaid().to_base64())
         // format!("https://mermaid.ink/img/pako:{}", self.to_mermaid().to_pako())

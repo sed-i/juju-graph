@@ -1,6 +1,6 @@
 # juju-graph
 
-Convert a juju bundle to a mermaid diagram.
+Convert a juju bundle to a diagram.
 
 ## Install
 ```bash

@@ -2,55 +2,81 @@ use crate::string_utils::MermaidRelated;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 
+#[derive(Debug, PartialEq)]
+pub struct AppRelPair {
+    app: String,
+    rel: String,
+}
+
+impl AppRelPair {
+    pub fn from_colon_notation(colon_notation: &str) -> Self {
+        // Colon-notation looks like this:
+        // hydra:pg-database
+        let (app, rel) = colon_notation.split_once(':').unwrap();
+        Self { app: app.to_string(), rel: rel.to_string() }
+    }
+
+    pub fn get_relation_label(&self, other: &Self) -> String {
+        if self.rel == other.rel {
+            // If both apps have the same relation name, render it only once
+            self.rel.to_string()
+        } else {
+            // Render them lexicographically
+            let (first, second) = (std::cmp::min(&self.rel, &other.rel).to_string(), std::cmp::max(&self.rel, &other.rel).to_string());
+            format!("{}:{}", first, second)
+        }
+    }
+}
+
+#[cfg(test)]
+mod test_app_rel_pair {
+    use super::*;
+
+    #[test]
+    fn test_from_colon_notation() {
+        assert_eq!(AppRelPair::from_colon_notation("app:rel"), AppRelPair {app: "app".to_string(), rel: "rel".to_string()});
+        assert_eq!(AppRelPair::from_colon_notation("app_name:rel_name"), AppRelPair {app: "app_name".to_string(), rel: "rel_name".to_string()});
+        assert_eq!(AppRelPair::from_colon_notation("app-name:rel-name"), AppRelPair {app: "app-name".to_string(), rel: "rel-name".to_string()});
+    }
+
+    #[test]
+    fn test_get_relation_label() {
+        let p1 = AppRelPair {app: "app-1".to_string(), rel: "provider".to_string()};
+        let p2 = AppRelPair {app: "app-2".to_string(), rel: "requirer".to_string()};
+        assert_eq!(p1.get_relation_label(&p2), "provider:requirer");
+        assert_eq!(p2.get_relation_label(&p1), "provider:requirer");
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Bundle {
+    // A "relations" section in a bundle.yaml looks like this:
+    // relations:
+    //   - [hydra:pg-database, postgresql-k8s:database]
+    //   - [kratos:pg-database, postgresql-k8s:database]
     relations: Vec<[String; 2]>,
 }
 
 impl Bundle {
     pub fn to_mermaid(&self) -> String {
-        let mut mermaid = String::new();
+        let mut output = String::new();
         for [rel1, rel2] in &self.relations {
-            let mut s1 = rel1.split(':');
-            let app1 = s1.next().unwrap();
-            let relname1 = s1.next().unwrap();
-
-            let mut s2 = rel2.split(':');
-            let app2 = s2.next().unwrap();
-            let relname2 = s2.next().unwrap();
-
-            // If both charms have the same relation name, render it only once
-            let edge = if relname1 == relname2 {
-                relname1.to_string()
-            } else {
-                format!("{}:{}", relname1, relname2)
-            };
-
-            mermaid.push_str(&format!("{} ---|{}| {}\n", app1, edge, app2));
+            let p1 = AppRelPair::from_colon_notation(rel1);
+            let p2 = AppRelPair::from_colon_notation(rel2);
+            let edge = p1.get_relation_label(&p2);
+            output.push_str(&format!("{} ---|{}| {}\n", p1.app, edge, p2.app));
         }
 
-        format!("graph LR\n{}", mermaid)
+        format!("graph LR\n{}", output)
     }
 
     pub fn to_graphviz(&self) -> String {
         let mut output = String::new();
         for [rel1, rel2] in &self.relations {
-            let mut s1 = rel1.split(':');
-            let app1 = s1.next().unwrap();
-            let relname1 = s1.next().unwrap();
-
-            let mut s2 = rel2.split(':');
-            let app2 = s2.next().unwrap();
-            let relname2 = s2.next().unwrap();
-
-            // If both charms have the same relation name, render it only once
-            let edge = if relname1 == relname2 {
-                relname1.to_string()
-            } else {
-                format!("{}:{}", relname1, relname2)
-            };
-
-            output.push_str(&format!("\"{}\" -- \"{}\" [label=\"{}\"]\n", app1, app2, edge));
+            let p1 = AppRelPair::from_colon_notation(rel1);
+            let p2 = AppRelPair::from_colon_notation(rel2);
+            let edge = p1.get_relation_label(&p2);
+            output.push_str(&format!("\"{}\" -- \"{}\" [label=\"{}\"]\n", p1.app, p2.app, edge));
         }
 
         // Could add rankdir=LR at the top, but diagram looks better without it.

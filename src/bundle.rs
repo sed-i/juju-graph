@@ -13,7 +13,10 @@ impl AppRelPair {
         // Colon-notation looks like this:
         // hydra:pg-database
         let (app, rel) = colon_notation.split_once(':').unwrap();
-        Self { app: app.to_string(), rel: rel.to_string() }
+        Self {
+            app: app.to_string(),
+            rel: rel.to_string(),
+        }
     }
 
     pub fn get_relation_label(&self, other: &Self) -> String {
@@ -22,7 +25,10 @@ impl AppRelPair {
             self.rel.to_string()
         } else {
             // Render them lexicographically
-            let (first, second) = (std::cmp::min(&self.rel, &other.rel).to_string(), std::cmp::max(&self.rel, &other.rel).to_string());
+            let (first, second) = (
+                std::cmp::min(&self.rel, &other.rel).to_string(),
+                std::cmp::max(&self.rel, &other.rel).to_string(),
+            );
             format!("{}:{}", first, second)
         }
     }
@@ -34,15 +40,39 @@ mod test_app_rel_pair {
 
     #[test]
     fn test_from_colon_notation() {
-        assert_eq!(AppRelPair::from_colon_notation("app:rel"), AppRelPair {app: "app".to_string(), rel: "rel".to_string()});
-        assert_eq!(AppRelPair::from_colon_notation("app_name:rel_name"), AppRelPair {app: "app_name".to_string(), rel: "rel_name".to_string()});
-        assert_eq!(AppRelPair::from_colon_notation("app-name:rel-name"), AppRelPair {app: "app-name".to_string(), rel: "rel-name".to_string()});
+        assert_eq!(
+            AppRelPair::from_colon_notation("app:rel"),
+            AppRelPair {
+                app: "app".to_string(),
+                rel: "rel".to_string()
+            }
+        );
+        assert_eq!(
+            AppRelPair::from_colon_notation("app_name:rel_name"),
+            AppRelPair {
+                app: "app_name".to_string(),
+                rel: "rel_name".to_string()
+            }
+        );
+        assert_eq!(
+            AppRelPair::from_colon_notation("app-name:rel-name"),
+            AppRelPair {
+                app: "app-name".to_string(),
+                rel: "rel-name".to_string()
+            }
+        );
     }
 
     #[test]
     fn test_get_relation_label() {
-        let p1 = AppRelPair {app: "app-1".to_string(), rel: "provider".to_string()};
-        let p2 = AppRelPair {app: "app-2".to_string(), rel: "requirer".to_string()};
+        let p1 = AppRelPair {
+            app: "app-1".to_string(),
+            rel: "provider".to_string(),
+        };
+        let p2 = AppRelPair {
+            app: "app-2".to_string(),
+            rel: "requirer".to_string(),
+        };
         assert_eq!(p1.get_relation_label(&p2), "provider:requirer");
         assert_eq!(p2.get_relation_label(&p1), "provider:requirer");
     }
@@ -76,7 +106,10 @@ impl Bundle {
             let p1 = AppRelPair::from_colon_notation(rel1);
             let p2 = AppRelPair::from_colon_notation(rel2);
             let edge = p1.get_relation_label(&p2);
-            output.push_str(&format!("\"{}\" -- \"{}\" [label=\"{}\"]\n", p1.app, p2.app, edge));
+            output.push_str(&format!(
+                "\"{}\" -- \"{}\" [label=\"{}\"]\n",
+                p1.app, p2.app, edge
+            ));
         }
 
         // Could add rankdir=LR at the top, but diagram looks better without it.

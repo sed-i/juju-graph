@@ -1,6 +1,6 @@
+use clap::{Parser, Subcommand};
 use std::error::Error;
 use std::io::IsTerminal;
-use clap::{Parser, Subcommand};
 
 mod bundle;
 mod string_utils;
@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::Mermaid { url}) => {
+        Some(Commands::Mermaid { url }) => {
             if *url {
                 // println!("{}", bundle.to_edit_url());
                 println!("{}", bundle.to_img_url());
@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("{}", bundle.to_mermaid());
             }
         }
-        Some(Commands::Graphviz {} ) => {
+        Some(Commands::Graphviz {}) => {
             println!("{}", bundle.to_graphviz());
         }
         None => {}

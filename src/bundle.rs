@@ -73,6 +73,7 @@ mod test_app_rel_pair {
             app: "app-2".to_string(),
             rel: "requirer".to_string(),
         };
+        assert_eq!(p1.get_relation_label(&p1), "provider");
         assert_eq!(p1.get_relation_label(&p2), "provider:requirer");
         assert_eq!(p2.get_relation_label(&p1), "provider:requirer");
     }
@@ -90,9 +91,9 @@ pub struct Bundle {
 impl Bundle {
     pub fn to_mermaid(&self) -> String {
         let mut output = String::new();
-        for [rel1, rel2] in &self.relations {
-            let p1 = AppRelPair::from_colon_notation(rel1);
-            let p2 = AppRelPair::from_colon_notation(rel2);
+        for [p1, p2] in &self.relations {
+            let p1 = AppRelPair::from_colon_notation(p1);
+            let p2 = AppRelPair::from_colon_notation(p2);
             let edge = p1.get_relation_label(&p2);
             output.push_str(&format!("{} ---|{}| {}\n", p1.app, edge, p2.app));
         }
@@ -102,9 +103,9 @@ impl Bundle {
 
     pub fn to_graphviz(&self) -> String {
         let mut output = String::new();
-        for [rel1, rel2] in &self.relations {
-            let p1 = AppRelPair::from_colon_notation(rel1);
-            let p2 = AppRelPair::from_colon_notation(rel2);
+        for [p1, p2] in &self.relations {
+            let p1 = AppRelPair::from_colon_notation(p1);
+            let p2 = AppRelPair::from_colon_notation(p2);
             let edge = p1.get_relation_label(&p2);
             output.push_str(&format!(
                 "\"{}\" -- \"{}\" [label=\"{}\"]\n",

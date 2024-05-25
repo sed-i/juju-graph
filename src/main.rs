@@ -35,6 +35,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         serde_yaml::from_reader(input.lock())?
     };
 
+    // bundle.to_graph();
+
     let cli = Cli::parse();
 
     match &cli.command {

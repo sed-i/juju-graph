@@ -1,3 +1,5 @@
+use petgraph::graph::{UnGraph, NodeIndex};
+use petgraph::data::FromElements;
 use crate::string_utils::MermaidRelated;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
@@ -89,6 +91,23 @@ pub struct Bundle {
 }
 
 impl Bundle {
+    // UnGraphMap does not allow parallel edges, so using UnGraph.
+    pub fn to_graph(&self) -> UnGraph<String, String> {
+        let mut graph: UnGraph<String, String> = UnGraph::new_undirected();
+        for [p1, p2] in &self.relations {
+            let p1 = AppRelPair::from_colon_notation(p1);
+            let p2 = AppRelPair::from_colon_notation(p2);
+            let edge = p1.get_relation_label(&p2);
+
+            let node_a = graph.add_node(p1.app);
+            let node_b = graph.add_node(p2.app);
+            graph.add_edge(node_a, node_b, edge);
+        }
+
+        // println!("Graph: {:?}", graph);
+        graph
+    }
+
     pub fn to_mermaid(&self) -> String {
         let mut output = String::new();
         for [p1, p2] in &self.relations {

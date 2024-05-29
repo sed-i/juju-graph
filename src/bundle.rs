@@ -1,16 +1,17 @@
-use petgraph::graph::{UnGraph, NodeIndex};
-use petgraph::data::FromElements;
 use crate::string_utils::MermaidRelated;
+use petgraph::dot::{Config, Dot};
+use petgraph::graph::UnGraph;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
-pub struct AppRelPair {
+pub struct AppRel {
     app: String,
     rel: String,
 }
 
-impl AppRelPair {
+impl AppRel {
     pub fn from_colon_notation(colon_notation: &str) -> Self {
         // Colon-notation looks like this:
         // hydra:pg-database
@@ -26,12 +27,31 @@ impl AppRelPair {
             // If both apps have the same relation name, render it only once
             self.rel.to_string()
         } else {
-            // Render them lexicographically
+            // Sort lexicographically, for consistency in presentation
             let (first, second) = (
                 std::cmp::min(&self.rel, &other.rel).to_string(),
                 std::cmp::max(&self.rel, &other.rel).to_string(),
             );
             format!("{}:{}", first, second)
+        }
+    }
+}
+
+struct Relation {
+    first: String,
+    second: String,
+    label: String,
+}
+
+impl Relation {
+    pub fn from_string_pair(first: &str, second: &str) -> Self {
+        let p1 = AppRel::from_colon_notation(first);
+        let p2 = AppRel::from_colon_notation(second);
+        let edge = p1.get_relation_label(&p2);
+        Self {
+            first: p1.app,
+            second: p2.app,
+            label: edge,
         }
     }
 }
@@ -43,22 +63,22 @@ mod test_app_rel_pair {
     #[test]
     fn test_from_colon_notation() {
         assert_eq!(
-            AppRelPair::from_colon_notation("app:rel"),
-            AppRelPair {
+            AppRel::from_colon_notation("app:rel"),
+            AppRel {
                 app: "app".to_string(),
                 rel: "rel".to_string()
             }
         );
         assert_eq!(
-            AppRelPair::from_colon_notation("app_name:rel_name"),
-            AppRelPair {
+            AppRel::from_colon_notation("app_name:rel_name"),
+            AppRel {
                 app: "app_name".to_string(),
                 rel: "rel_name".to_string()
             }
         );
         assert_eq!(
-            AppRelPair::from_colon_notation("app-name:rel-name"),
-            AppRelPair {
+            AppRel::from_colon_notation("app-name:rel-name"),
+            AppRel {
                 app: "app-name".to_string(),
                 rel: "rel-name".to_string()
             }
@@ -67,11 +87,11 @@ mod test_app_rel_pair {
 
     #[test]
     fn test_get_relation_label() {
-        let p1 = AppRelPair {
+        let p1 = AppRel {
             app: "app-1".to_string(),
             rel: "provider".to_string(),
         };
-        let p2 = AppRelPair {
+        let p2 = AppRel {
             app: "app-2".to_string(),
             rel: "requirer".to_string(),
         };
@@ -94,14 +114,25 @@ impl Bundle {
     // UnGraphMap does not allow parallel edges, so using UnGraph.
     pub fn to_graph(&self) -> UnGraph<String, String> {
         let mut graph: UnGraph<String, String> = UnGraph::new_undirected();
-        for [p1, p2] in &self.relations {
-            let p1 = AppRelPair::from_colon_notation(p1);
-            let p2 = AppRelPair::from_colon_notation(p2);
-            let edge = p1.get_relation_label(&p2);
 
-            let node_a = graph.add_node(p1.app);
-            let node_b = graph.add_node(p2.app);
-            graph.add_edge(node_a, node_b, edge);
+        // We need to keep track of the node weight (label), otherwise the same app will be added
+        // twice with different index every time.
+        let mut node_weights = HashMap::new();
+
+        for [p1, p2] in &self.relations {
+            let rel = Relation::from_string_pair(p1, p2);
+
+            node_weights
+                .entry(rel.first.clone())
+                .or_insert_with(|| graph.add_node(rel.first.clone()));
+            node_weights
+                .entry(rel.second.clone())
+                .or_insert_with(|| graph.add_node(rel.second.clone()));
+
+            let node_a = node_weights.get(&rel.first).unwrap();
+            let node_b = node_weights.get(&rel.second).unwrap();
+
+            graph.add_edge(*node_a, *node_b, rel.label);
         }
 
         // println!("Graph: {:?}", graph);
@@ -111,29 +142,32 @@ impl Bundle {
     pub fn to_mermaid(&self) -> String {
         let mut output = String::new();
         for [p1, p2] in &self.relations {
-            let p1 = AppRelPair::from_colon_notation(p1);
-            let p2 = AppRelPair::from_colon_notation(p2);
-            let edge = p1.get_relation_label(&p2);
-            output.push_str(&format!("{} ---|{}| {}\n", p1.app, edge, p2.app));
+            let rel = Relation::from_string_pair(p1, p2);
+            output.push_str(&format!(
+                "{} ---|{}| {}\n",
+                rel.first, rel.label, rel.second
+            ));
         }
 
         format!("graph LR\n{}", output)
     }
 
     pub fn to_graphviz(&self) -> String {
-        let mut output = String::new();
-        for [p1, p2] in &self.relations {
-            let p1 = AppRelPair::from_colon_notation(p1);
-            let p2 = AppRelPair::from_colon_notation(p2);
-            let edge = p1.get_relation_label(&p2);
-            output.push_str(&format!(
-                "\"{}\" -- \"{}\" [label=\"{}\"]\n",
-                p1.app, p2.app, edge
-            ));
-        }
+        // The Dot export seems to be broken: all nodes have only one edge.
+        format!("{}", Dot::new(&self.to_graph()))
+        // Rolling my own instead.
 
-        // Could add rankdir=LR at the top, but diagram looks better without it.
-        format!("graph {{\n{}}}", output)
+        // let mut output = String::new();
+        // for [p1, p2] in &self.relations {
+        //     let rel = Relation::from_string_pair(p1, p2);
+        //     output.push_str(&format!(
+        //         "\"{}\" -- \"{}\" [label=\"{}\"]\n",
+        //         rel.first, rel.second, rel.label
+        //     ));
+        // }
+        //
+        // // Could add rankdir=LR at the top, but diagram looks better without it.
+        // format!("graph {{\n{}}}", output)
     }
 
     pub fn to_img_url(&self) -> String {

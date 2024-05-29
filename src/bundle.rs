@@ -1,6 +1,7 @@
 use crate::string_utils::MermaidRelated;
-use petgraph::dot::{Config, Dot};
+use petgraph::dot::Dot;
 use petgraph::graph::UnGraph;
+use petgraph::visit::EdgeRef;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
@@ -140,23 +141,20 @@ impl Bundle {
     }
 
     pub fn to_mermaid(&self) -> String {
-        let mut output = String::new();
-        for [p1, p2] in &self.relations {
-            let rel = Relation::from_string_pair(p1, p2);
-            output.push_str(&format!(
-                "{} ---|{}| {}\n",
-                rel.first, rel.label, rel.second
-            ));
-        }
-
-        format!("graph LR\n{}", output)
+        // let mut output = String::new();
+        // for [p1, p2] in &self.relations {
+        //     let rel = Relation::from_string_pair(p1, p2);
+        //     output.push_str(&format!(
+        //         "{} ---|{}| {}\n",
+        //         rel.first, rel.label, rel.second
+        //     ));
+        // }
+        //
+        // format!("graph LR\n{}", output)
+        self.to_graph().to_mermaid()
     }
 
     pub fn to_graphviz(&self) -> String {
-        // The Dot export seems to be broken: all nodes have only one edge.
-        format!("{}", Dot::new(&self.to_graph()))
-        // Rolling my own instead.
-
         // let mut output = String::new();
         // for [p1, p2] in &self.relations {
         //     let rel = Relation::from_string_pair(p1, p2);
@@ -168,6 +166,7 @@ impl Bundle {
         //
         // // Could add rankdir=LR at the top, but diagram looks better without it.
         // format!("graph {{\n{}}}", output)
+        self.to_graph().to_graphviz()
     }
 
     pub fn to_img_url(&self) -> String {
@@ -197,5 +196,30 @@ impl Bundle {
 
         format!("https://mermaid.live/edit#pako:{}", spec.to_pako())
         // https://mermaid.live/edit#pako:eJx1jjsOwzAMQ69iaK4ukDN06txFjtQ6gD-xbBco4ty9cdO1I8lHghvMiQUmeCqtzlxv90iJHYZ3yR41tSpqELGz_aluzmyJMR3m7Fs53H-14kiFkW03Azixb0Ihr90oWbvUkLGIvsYMXCCIBloYpg2qkzDesTyo-Qr7_gFw70Bn
+    }
+}
+
+pub trait GraphAsCode {
+    fn to_graphviz(&self) -> String;
+    fn to_mermaid(&self) -> String;
+}
+
+impl GraphAsCode for UnGraph<String, String> {
+    fn to_graphviz(&self) -> String {
+        format!("{}", Dot::new(&self))
+    }
+
+    fn to_mermaid(&self) -> String {
+        let mut output = String::new();
+
+        for e in self.edge_references() {
+            let label = e.weight();
+            let first = self.node_weight(e.source()).unwrap();
+            let second = self.node_weight(e.target()).unwrap();
+
+            output.push_str(&format!("{} ---|{}| {}\n", first, label, second));
+        }
+
+        format!("graph LR\n{}", output)
     }
 }

@@ -4,7 +4,6 @@ use petgraph::graph::UnGraph;
 use petgraph::visit::EdgeRef;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::HashMap;
 // use petgraph::graph::NodeIndex;
 // use petgraph::visit::Bfs;
 // use petgraph::algo::dijkstra;
@@ -118,7 +117,8 @@ pub struct Bundle {
 
 impl Bundle {
     pub fn to_graph(&self) -> UnGraph<String, String> {
-        let mut graph: HashBackedUnGraphWithParallelEdges<String, String> = HashBackedUnGraphWithParallelEdges::new();
+        let mut graph: HashBackedUnGraphWithParallelEdges<String, String> =
+            HashBackedUnGraphWithParallelEdges::new();
         for [p1, p2] in &self.relations {
             let rel = Relation::from_string_pair(p1, p2);
             graph.add_edge(&rel.first, &rel.second, &rel.label);

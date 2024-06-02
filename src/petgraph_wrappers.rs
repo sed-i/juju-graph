@@ -1,16 +1,23 @@
+use petgraph::graph::{NodeIndex, UnGraph};
 use std::collections::HashMap;
 use std::hash::Hash;
-use petgraph::graph::{NodeIndex, UnGraph};
 
-pub struct HashBackedUnGraphWithParallelEdges<N, E> where N: Eq + Hash + Clone, E: Clone {
+pub struct HashBackedUnGraphWithParallelEdges<N, E>
+where
+    N: Eq + Hash + Clone,
+    E: Clone,
+{
     /// Like UnGraphMap, but also support parallel edges.
     /// (UnGraphMap does not allow parallel edges, so wrapping UnGraph.)
-
     pub graph: UnGraph<N, E>,
     nodes: HashMap<N, NodeIndex>,
 }
 
-impl<N, E> HashBackedUnGraphWithParallelEdges<N, E> where N: Eq + Hash + Clone, E: Clone {
+impl<N, E> HashBackedUnGraphWithParallelEdges<N, E>
+where
+    N: Eq + Hash + Clone,
+    E: Clone,
+{
     pub fn new() -> Self {
         Self {
             graph: UnGraph::new_undirected(),
@@ -28,8 +35,8 @@ impl<N, E> HashBackedUnGraphWithParallelEdges<N, E> where N: Eq + Hash + Clone, 
             self.nodes.insert(second.clone(), new_node);
         }
 
-        let node_a = self.nodes.get(&first).unwrap();
-        let node_b = self.nodes.get(&second).unwrap();
+        let node_a = self.nodes.get(first).unwrap();
+        let node_b = self.nodes.get(second).unwrap();
         self.graph.add_edge(*node_a, *node_b, edge.clone());
     }
 }

@@ -6,6 +6,7 @@ mod bundle;
 mod string_utils;
 
 use bundle::Bundle;
+use crate::bundle::GraphAsCode;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -52,6 +53,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("{}", bundle.to_graphviz());
         }
         None => {}
+        // None => {
+        //     println!("{}", bundle.to_graph().spotlight("aodh", 0).to_mermaid());
+        // }
     }
 
     Ok(())

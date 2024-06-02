@@ -5,6 +5,9 @@ use petgraph::visit::EdgeRef;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
+// use petgraph::graph::NodeIndex;
+// use petgraph::visit::Bfs;
+// use petgraph::algo::dijkstra;
 
 #[derive(Debug, PartialEq)]
 pub struct AppRel {
@@ -212,6 +215,8 @@ impl GraphAsCode for UnGraph<String, String> {
     fn to_mermaid(&self) -> String {
         let mut output = String::new();
 
+        // FIXME iterating over edges does not take into account apps without any relations
+        //  Need to iterate by nodes instead.
         for e in self.edge_references() {
             let label = e.weight();
             let first = self.node_weight(e.source()).unwrap();
@@ -223,3 +228,53 @@ impl GraphAsCode for UnGraph<String, String> {
         format!("graph LR\n{}", output)
     }
 }
+
+// pub trait Subgraphs {
+//     fn spotlight(&self, node_weight: &str, depth: usize) -> UnGraph<String, String>;
+// }
+//
+// impl Subgraphs for UnGraph<String, String> {
+//     fn spotlight(&self, node_weight: &str, depth: usize) -> UnGraph<String, String> {
+//         // First, find the NodeIndex of the node_weight.
+//         let mut target: Option<NodeIndex> = None;
+//         for node in self.node_indices() {
+//             if self[node] == node_weight {
+//                 target = Some(node);
+//                 break;
+//             }
+//         }
+//
+//         let mut subset: UnGraph<String, String> = UnGraph::new_undirected();
+//         subset.add_node("test".to_string());
+//
+//         // let mut subset: UnGraph<String, String> = UnGraph::new_undirected();
+//         // if let Some(target) = target {
+//         //     let mut bfs = Bfs::new(self, target);
+//         //     let mut visited = vec![target];
+//         //
+//         //     while let Some(node) = bfs.next(self) {
+//         //         let node_depth = visited.len();  // FIXME: actually calculate depth
+//         //         // if node_depth <= depth {
+//         //         if node_depth <= 10 {
+//         //             visited.push(node);
+//         //             subset.add_node(self.node_weight(node).unwrap().to_string());
+//         //         } else {
+//         //             break;
+//         //         }
+//         //     }
+//         //
+//         //     for &node in &visited {
+//         //         for neighbor in self.neighbors(node) {
+//         //             if visited.contains(&neighbor) {
+//         //                 for edge in self.edges_connecting(node, neighbor) {
+//         //                     println!("{}", edge.weight().to_string());
+//         //                     subset.add_edge(node, neighbor, edge.weight().to_string());
+//         //                 }
+//         //             }
+//         //         }
+//         //     }
+//         // }
+//
+//         subset
+//     }
+// }

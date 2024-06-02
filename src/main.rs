@@ -4,6 +4,7 @@ use std::io::IsTerminal;
 
 mod bundle;
 mod string_utils;
+mod petgraph_wrappers;
 
 use bundle::Bundle;
 use crate::bundle::GraphAsCode;

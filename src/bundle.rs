@@ -9,6 +9,8 @@ use std::collections::HashMap;
 // use petgraph::visit::Bfs;
 // use petgraph::algo::dijkstra;
 
+use crate::petgraph_wrappers::HashBackedUnGraphWithParallelEdges;
+
 #[derive(Debug, PartialEq)]
 pub struct AppRel {
     app: String,
@@ -115,32 +117,15 @@ pub struct Bundle {
 }
 
 impl Bundle {
-    // UnGraphMap does not allow parallel edges, so using UnGraph.
     pub fn to_graph(&self) -> UnGraph<String, String> {
-        let mut graph: UnGraph<String, String> = UnGraph::new_undirected();
-
-        // We need to keep track of the node weight (label), otherwise the same app will be added
-        // twice with different index every time.
-        let mut node_weights = HashMap::new();
-
+        let mut graph: HashBackedUnGraphWithParallelEdges<String, String> = HashBackedUnGraphWithParallelEdges::new();
         for [p1, p2] in &self.relations {
             let rel = Relation::from_string_pair(p1, p2);
-
-            node_weights
-                .entry(rel.first.clone())
-                .or_insert_with(|| graph.add_node(rel.first.clone()));
-            node_weights
-                .entry(rel.second.clone())
-                .or_insert_with(|| graph.add_node(rel.second.clone()));
-
-            let node_a = node_weights.get(&rel.first).unwrap();
-            let node_b = node_weights.get(&rel.second).unwrap();
-
-            graph.add_edge(*node_a, *node_b, rel.label);
+            graph.add_edge(&rel.first, &rel.second, &rel.label);
         }
 
         // println!("Graph: {:?}", graph);
-        graph
+        graph.graph
     }
 
     pub fn to_mermaid(&self) -> String {

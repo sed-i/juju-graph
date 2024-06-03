@@ -29,8 +29,6 @@ impl MermaidRelated for &[u8] {
             "https://mermaid.ink/img/{}",
             String::from_utf8_lossy(self).into_owned().to_base64()
         )
-        // format!("https://mermaid.ink/img/pako:{}", self.to_mermaid().to_pako())
-        // https://mermaid.ink/img/Z3JhcGggTFIKYW9kaC1teXNxbC1yb3V0ZXIgLS0tfGRiLXJvdXRlcnwgbXlzcWwtaW5ub2RiLWNsdXN0ZXIKYW9kaC1teXNxbC1yb3V0ZXIgLS0tfHNoYXJlZC1kYnwgYW9kaAphb2RoIC0tLXxhbXFwfCByYWJiaXRtcS1zZXJ2ZXIK
     }
 
     fn to_edit_url(&self) -> String {
@@ -53,7 +51,6 @@ impl MermaidRelated for &[u8] {
         .to_string();
 
         format!("https://mermaid.live/edit#pako:{}", spec.to_pako())
-        // https://mermaid.live/edit#pako:eJx1jjsOwzAMQ69iaK4ukDN06txFjtQ6gD-xbBco4ty9cdO1I8lHghvMiQUmeCqtzlxv90iJHYZ3yR41tSpqELGz_aluzmyJMR3m7Fs53H-14kiFkW03Azixb0Ihr90oWbvUkLGIvsYMXCCIBloYpg2qkzDesTyo-Qr7_gFw70Bn
     }
 }
 
@@ -71,8 +68,6 @@ impl MermaidRelated for String {
 
     fn to_img_url(&self) -> String {
         format!("https://mermaid.ink/img/{}", self.to_base64())
-        // format!("https://mermaid.ink/img/pako:{}", self.to_mermaid().to_pako())
-        // https://mermaid.ink/img/Z3JhcGggTFIKYW9kaC1teXNxbC1yb3V0ZXIgLS0tfGRiLXJvdXRlcnwgbXlzcWwtaW5ub2RiLWNsdXN0ZXIKYW9kaC1teXNxbC1yb3V0ZXIgLS0tfHNoYXJlZC1kYnwgYW9kaAphb2RoIC0tLXxhbXFwfCByYWJiaXRtcS1zZXJ2ZXIK
     }
 
     fn to_edit_url(&self) -> String {
@@ -95,6 +90,5 @@ impl MermaidRelated for String {
         .to_string();
 
         format!("https://mermaid.live/edit#pako:{}", spec.to_pako())
-        // https://mermaid.live/edit#pako:eJx1jjsOwzAMQ69iaK4ukDN06txFjtQ6gD-xbBco4ty9cdO1I8lHghvMiQUmeCqtzlxv90iJHYZ3yR41tSpqELGz_aluzmyJMR3m7Fs53H-14kiFkW03Azixb0Ihr90oWbvUkLGIvsYMXCCIBloYpg2qkzDesTyo-Qr7_gFw70Bn
     }
 }

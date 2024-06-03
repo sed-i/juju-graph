@@ -43,8 +43,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         serde_yaml::from_reader(input.lock())?
     };
 
-    // bundle.to_graph();
-
     let cli = Cli::parse();
 
     let graph = bundle.to_graph();
@@ -73,10 +71,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("{}", graph.graph.to_graphviz());
         }
         None => {
-            println!(
-                "{}",
-                graph.neighbors(&String::from("aodh")).graph.to_mermaid()
-            );
+            println!("Use --help for usage details.");
         }
     }
 

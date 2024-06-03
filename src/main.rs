@@ -1,3 +1,4 @@
+use crate::petgraph_wrappers::GraphAsCode;
 use clap::{Parser, Subcommand};
 use std::error::Error;
 use std::io::IsTerminal;
@@ -6,6 +7,7 @@ mod bundle;
 mod petgraph_wrappers;
 mod string_utils;
 
+use crate::string_utils::MermaidRelated;
 use bundle::Bundle;
 
 #[derive(Parser)]
@@ -20,8 +22,13 @@ enum Commands {
     Mermaid {
         #[arg(long)]
         url: bool,
+        #[arg(long, default_value = "")]
+        spotlight: String,
     },
-    Graphviz {},
+    Graphviz {
+        #[arg(long, default_value = "")]
+        spotlight: String,
+    },
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -40,21 +47,37 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let cli = Cli::parse();
 
+    let graph = bundle.to_graph();
+
     match &cli.command {
-        Some(Commands::Mermaid { url }) => {
+        Some(Commands::Mermaid { url, spotlight }) => {
+            let graph = if spotlight.is_empty() {
+                graph
+            } else {
+                graph.neighbors(spotlight)
+            };
+
             if *url {
                 // println!("{}", bundle.to_edit_url());
-                println!("{}", bundle.to_img_url());
+                println!("{}", graph.graph.to_mermaid().to_img_url());
             } else {
-                println!("{}", bundle.to_mermaid());
+                println!("{}", graph.graph.to_mermaid());
             }
         }
-        Some(Commands::Graphviz {}) => {
-            println!("{}", bundle.to_graphviz());
+        Some(Commands::Graphviz { spotlight }) => {
+            let graph = if spotlight.is_empty() {
+                graph
+            } else {
+                graph.neighbors(spotlight)
+            };
+            println!("{}", graph.graph.to_graphviz());
         }
-        None => {} // None => {
-                   //     println!("{}", bundle.to_graph().spotlight("aodh", 0).to_mermaid());
-                   // }
+        None => {
+            println!(
+                "{}",
+                graph.neighbors(&String::from("aodh")).graph.to_mermaid()
+            );
+        }
     }
 
     Ok(())

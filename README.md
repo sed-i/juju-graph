@@ -13,6 +13,11 @@ Convert bundle to mermaid:
 juju export-bundle | juju-graph mermaid
 ```
 
+Output a subgraph containing only the given app and its immediate neighbors:
+```shell
+juju export-bundle | juju-graph mermaid --spotlight grafana
+```
+
 Render a mermaid.live image url:
 ```shell
 juju export-bundle | juju-graph mermaid --url

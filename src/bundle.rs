@@ -1,12 +1,4 @@
-use crate::string_utils::MermaidRelated;
-use petgraph::dot::Dot;
-use petgraph::graph::UnGraph;
-use petgraph::visit::EdgeRef;
 use serde_derive::{Deserialize, Serialize};
-use serde_json::json;
-// use petgraph::graph::NodeIndex;
-// use petgraph::visit::Bfs;
-// use petgraph::algo::dijkstra;
 
 use crate::petgraph_wrappers::HashBackedUnGraphWithParallelEdges;
 
@@ -116,7 +108,7 @@ pub struct Bundle {
 }
 
 impl Bundle {
-    pub fn to_graph(&self) -> UnGraph<String, String> {
+    pub fn to_graph(&self) -> HashBackedUnGraphWithParallelEdges<String, String> {
         let mut graph: HashBackedUnGraphWithParallelEdges<String, String> =
             HashBackedUnGraphWithParallelEdges::new();
         for [p1, p2] in &self.relations {
@@ -125,92 +117,7 @@ impl Bundle {
         }
 
         // println!("Graph: {:?}", graph);
-        graph.graph
-    }
-
-    pub fn to_mermaid(&self) -> String {
-        // let mut output = String::new();
-        // for [p1, p2] in &self.relations {
-        //     let rel = Relation::from_string_pair(p1, p2);
-        //     output.push_str(&format!(
-        //         "{} ---|{}| {}\n",
-        //         rel.first, rel.label, rel.second
-        //     ));
-        // }
-        //
-        // format!("graph LR\n{}", output)
-        self.to_graph().to_mermaid()
-    }
-
-    pub fn to_graphviz(&self) -> String {
-        // let mut output = String::new();
-        // for [p1, p2] in &self.relations {
-        //     let rel = Relation::from_string_pair(p1, p2);
-        //     output.push_str(&format!(
-        //         "\"{}\" -- \"{}\" [label=\"{}\"]\n",
-        //         rel.first, rel.second, rel.label
-        //     ));
-        // }
-        //
-        // // Could add rankdir=LR at the top, but diagram looks better without it.
-        // format!("graph {{\n{}}}", output)
-        self.to_graph().to_graphviz()
-    }
-
-    pub fn to_img_url(&self) -> String {
-        format!("https://mermaid.ink/img/{}", self.to_mermaid().to_base64())
-        // format!("https://mermaid.ink/img/pako:{}", self.to_mermaid().to_pako())
-        // https://mermaid.ink/img/Z3JhcGggTFIKYW9kaC1teXNxbC1yb3V0ZXIgLS0tfGRiLXJvdXRlcnwgbXlzcWwtaW5ub2RiLWNsdXN0ZXIKYW9kaC1teXNxbC1yb3V0ZXIgLS0tfHNoYXJlZC1kYnwgYW9kaAphb2RoIC0tLXxhbXFwfCByYWJiaXRtcS1zZXJ2ZXIK
-    }
-
-    pub fn to_edit_url(&self) -> String {
-        let spec = json!({
-            "code": self,
-            "mermaid": {
-                "theme": "default",
-            },
-            // "updateEditor": false,
-            // "autoSync": true,
-            // "updateDiagram":false,
-            // "pan":{
-            //     "x":86.83623504638672,
-            //     "y":83.19340515136719
-            // },
-            // "zoom":0.8584164770180059,
-            // "editorMode":"code",
-            // "panZoom":false,
-        })
-        .to_string();
-
-        format!("https://mermaid.live/edit#pako:{}", spec.to_pako())
-        // https://mermaid.live/edit#pako:eJx1jjsOwzAMQ69iaK4ukDN06txFjtQ6gD-xbBco4ty9cdO1I8lHghvMiQUmeCqtzlxv90iJHYZ3yR41tSpqELGz_aluzmyJMR3m7Fs53H-14kiFkW03Azixb0Ihr90oWbvUkLGIvsYMXCCIBloYpg2qkzDesTyo-Qr7_gFw70Bn
-    }
-}
-
-pub trait GraphAsCode {
-    fn to_graphviz(&self) -> String;
-    fn to_mermaid(&self) -> String;
-}
-
-impl GraphAsCode for UnGraph<String, String> {
-    fn to_graphviz(&self) -> String {
-        format!("{}", Dot::new(&self))
-    }
-
-    fn to_mermaid(&self) -> String {
-        let mut output = String::new();
-
-        // FIXME iterating over edges does not take into account apps without any relations
-        //  Need to iterate by nodes instead.
-        for e in self.edge_references() {
-            let label = e.weight();
-            let first = self.node_weight(e.source()).unwrap();
-            let second = self.node_weight(e.target()).unwrap();
-
-            output.push_str(&format!("{} ---|{}| {}\n", first, label, second));
-        }
-
-        format!("graph LR\n{}", output)
+        graph
     }
 }
 

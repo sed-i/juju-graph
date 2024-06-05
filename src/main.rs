@@ -14,7 +14,7 @@ use bundle::Bundle;
 #[command(version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let graph = bundle.to_graph();
 
     match &cli.command {
-        Some(Commands::Mermaid { url, spotlight }) => {
+        Commands::Mermaid { url, spotlight } => {
             let graph = if spotlight.is_empty() {
                 graph
             } else {
@@ -62,16 +62,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("{}", graph.graph.to_mermaid());
             }
         }
-        Some(Commands::Graphviz { spotlight }) => {
+        Commands::Graphviz { spotlight } => {
             let graph = if spotlight.is_empty() {
                 graph
             } else {
                 graph.neighbors(spotlight)
             };
             println!("{}", graph.graph.to_graphviz());
-        }
-        None => {
-            println!("Use --help for usage details.");
         }
     }
 

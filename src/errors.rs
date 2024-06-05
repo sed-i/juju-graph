@@ -1,4 +1,4 @@
-use std::{io, path::PathBuf, result};
+use std::{io, path::PathBuf};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -9,4 +9,4 @@ pub enum Error {
     SerdeYaml(#[from] serde_yaml::Error),
 }
 
-pub type Result<T> = result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;

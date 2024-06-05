@@ -47,7 +47,7 @@ fn run() -> Result<()> {
     let bundle: Bundle = if input.is_terminal() {
         // Empty stdin - try to read "bundle.yaml"
         let f = std::fs::File::open("bundle.yaml").map_err(|cause| Error::IO {
-            file: "bundle.yaml".into(),
+            path: "bundle.yaml".into(),
             cause,
         })?;
         serde_yaml::from_reader(f)?

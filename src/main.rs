@@ -32,6 +32,8 @@ enum Commands {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let cli = Cli::parse();
+
     let input = std::io::stdin();
 
     let bundle: Bundle = if input.is_terminal() {
@@ -42,8 +44,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Read from stdin
         serde_yaml::from_reader(input.lock())?
     };
-
-    let cli = Cli::parse();
 
     let graph = bundle.to_graph();
 

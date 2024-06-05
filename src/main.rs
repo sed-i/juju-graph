@@ -14,7 +14,7 @@ use bundle::Bundle;
 #[command(version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -32,6 +32,8 @@ enum Commands {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let cli = Cli::parse();
+
     let input = std::io::stdin();
 
     let bundle: Bundle = if input.is_terminal() {
@@ -43,13 +45,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         serde_yaml::from_reader(input.lock())?
     };
 
-    let cli = Cli::parse();
-
     let graph = bundle.to_graph();
 
     match &cli.command {
+<<<<<<< chore/cli-spotlight-option
         Some(Commands::Mermaid { url, spotlight }) => {
             let graph = if let Some(spotlight) = spotlight {
+=======
+        Commands::Mermaid { url, spotlight } => {
+            let graph = if spotlight.is_empty() {
+                graph
+            } else {
+>>>>>>> main
                 graph.neighbors(spotlight)
             } else {
                 graph
@@ -62,16 +69,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("{}", graph.graph.to_mermaid());
             }
         }
+<<<<<<< chore/cli-spotlight-option
         Some(Commands::Graphviz { spotlight }) => {
             let graph = if let Some(spotlight) = spotlight {
+=======
+        Commands::Graphviz { spotlight } => {
+            let graph = if spotlight.is_empty() {
+                graph
+            } else {
+>>>>>>> main
                 graph.neighbors(spotlight)
             } else {
                 graph
             };
             println!("{}", graph.graph.to_graphviz());
-        }
-        None => {
-            println!("Use --help for usage details.");
         }
     }
 

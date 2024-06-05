@@ -1,9 +1,9 @@
-use std::{io, result};
+use std::{io, path::PathBuf, result};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("cannot read {path}: {cause}")]
-    IO { path: String, cause: io::Error },
+    IO { path: PathBuf, cause: io::Error },
 
     #[error(transparent)]
     SerdeYaml(#[from] serde_yaml::Error),

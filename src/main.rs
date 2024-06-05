@@ -3,12 +3,12 @@ use clap::{Parser, Subcommand};
 use std::{io::IsTerminal, process};
 
 mod bundle;
-mod lib;
+mod errors;
 mod petgraph_wrappers;
 mod string_utils;
 
 use crate::{
-    lib::{Error, Result},
+    errors::{Error, Result},
     string_utils::MermaidRelated,
 };
 use bundle::Bundle;

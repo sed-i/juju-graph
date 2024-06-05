@@ -1,13 +1,16 @@
 use crate::petgraph_wrappers::GraphAsCode;
 use clap::{Parser, Subcommand};
-use std::error::Error;
-use std::io::IsTerminal;
+use std::{io::IsTerminal, process};
 
 mod bundle;
+mod errors;
 mod petgraph_wrappers;
 mod string_utils;
 
-use crate::string_utils::MermaidRelated;
+use crate::{
+    errors::{Error, Result},
+    string_utils::MermaidRelated,
+};
 use bundle::Bundle;
 
 #[derive(Parser)]
@@ -31,12 +34,22 @@ enum Commands {
     },
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
+    if let Err(e) = run() {
+        eprintln!("{e}");
+        process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     let input = std::io::stdin();
 
     let bundle: Bundle = if input.is_terminal() {
         // Empty stdin - try to read "bundle.yaml"
-        let f = std::fs::File::open("bundle.yaml")?;
+        let f = std::fs::File::open("bundle.yaml").map_err(|cause| Error::IO {
+            path: "bundle.yaml".into(),
+            cause,
+        })?;
         serde_yaml::from_reader(f)?
     } else {
         // Read from stdin

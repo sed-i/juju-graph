@@ -48,15 +48,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let graph = bundle.to_graph();
 
     match &cli.command {
-<<<<<<< chore/cli-spotlight-option
-        Some(Commands::Mermaid { url, spotlight }) => {
-            let graph = if let Some(spotlight) = spotlight {
-=======
         Commands::Mermaid { url, spotlight } => {
-            let graph = if spotlight.is_empty() {
-                graph
-            } else {
->>>>>>> main
+            let graph = if let Some(spotlight) = spotlight {
                 graph.neighbors(spotlight)
             } else {
                 graph
@@ -69,15 +62,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("{}", graph.graph.to_mermaid());
             }
         }
-<<<<<<< chore/cli-spotlight-option
-        Some(Commands::Graphviz { spotlight }) => {
-            let graph = if let Some(spotlight) = spotlight {
-=======
         Commands::Graphviz { spotlight } => {
-            let graph = if spotlight.is_empty() {
-                graph
-            } else {
->>>>>>> main
+            let graph = if let Some(spotlight) = spotlight {
                 graph.neighbors(spotlight)
             } else {
                 graph

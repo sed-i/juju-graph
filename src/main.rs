@@ -22,12 +22,12 @@ enum Commands {
     Mermaid {
         #[arg(long)]
         url: bool,
-        #[arg(long, default_value = "")]
-        spotlight: String,
+        #[arg(long)]
+        spotlight: Option<String>,
     },
     Graphviz {
-        #[arg(long, default_value = "")]
-        spotlight: String,
+        #[arg(long)]
+        spotlight: Option<String>,
     },
 }
 
@@ -49,10 +49,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match &cli.command {
         Commands::Mermaid { url, spotlight } => {
-            let graph = if spotlight.is_empty() {
-                graph
-            } else {
+            let graph = if let Some(spotlight) = spotlight {
                 graph.neighbors(spotlight)
+            } else {
+                graph
             };
 
             if *url {
@@ -63,10 +63,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
         Commands::Graphviz { spotlight } => {
-            let graph = if spotlight.is_empty() {
-                graph
-            } else {
+            let graph = if let Some(spotlight) = spotlight {
                 graph.neighbors(spotlight)
+            } else {
+                graph
             };
             println!("{}", graph.graph.to_graphviz());
         }

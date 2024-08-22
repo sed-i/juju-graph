@@ -14,6 +14,7 @@ mod string_utils;
 use crate::string_utils::MermaidRelated;
 use bundle::Bundle;
 
+/// Transform juju bundles into diagrams:
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
@@ -23,13 +24,20 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Output as mermaid diagram (see https://mermaid.live)
     Mermaid {
+        /// Whether to render a mermaid.live image url
         #[arg(long)]
         url: bool,
+
+        /// Output a subgraph containing only the given app and its immediate neighbors
         #[arg(long)]
         spotlight: Option<String>,
     },
+
+    /// Output as graphviz diagram
     Graphviz {
+        /// Output a subgraph containing only the given app and its immediate neighbors
         #[arg(long)]
         spotlight: Option<String>,
     },

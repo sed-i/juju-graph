@@ -1,0 +1,16 @@
+name: juju-graph
+summary: Transform bundles into diagrams
+description: A utility for rendering juju bundle yaml as mermaid/graphviz
+version: git
+base: core22
+confinement: strict
+
+parts:
+  juju-graph:
+    plugin: rust
+    source: .
+
+apps:
+  juju-graph:
+    command: bin/juju-graph
+

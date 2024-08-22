@@ -1,7 +1,11 @@
 use crate::petgraph_wrappers::GraphAsCode;
 use clap::{Parser, Subcommand};
+use serde::Deserialize;
 use std::error::Error;
+use std::fs;
 use std::io::IsTerminal;
+use std::io::Read;
+use std::io::Stdin;
 
 mod bundle;
 mod petgraph_wrappers;
@@ -34,15 +38,32 @@ enum Commands {
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
-    let input = std::io::stdin();
+    let mut input = std::io::stdin();
 
-    let bundle: Bundle = if input.is_terminal() {
+    let contents: String = if input.is_terminal() {
         // Empty stdin - try to read "bundle.yaml"
-        let f = std::fs::File::open("bundle.yaml")?;
-        serde_yaml::from_reader(f)?
+        // First reading to string because it's the only way to read a multi-doc yaml
+
+        //let f = std::fs::File::open("bundle.yaml")?;
+        fs::read_to_string("bundle.yaml")?
+        //serde_yaml::from_reader(f)?
     } else {
         // Read from stdin
-        serde_yaml::from_reader(input.lock())?
+        let mut contents: String = String::new();
+        Stdin::read_to_string(&mut input, &mut contents)?;
+        contents
+        //serde_yaml::from_reader(input.lock())?
+    };
+
+    let mut d = serde_yaml::Deserializer::from_str(&contents);
+    let bundle: Bundle = loop {
+        if let Some(dd) = d.next() {
+            if let Ok(bundle) = Bundle::deserialize(dd) {
+                break bundle;
+            }
+        } else {
+            panic!("Invalid yaml");
+        }
     };
 
     let graph = bundle.to_graph();

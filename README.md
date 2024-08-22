@@ -1,5 +1,7 @@
 # juju-graph
 
+[![juju-graph](https://snapcraft.io/juju-graph/badge.svg)](https://snapcraft.io/juju-graph)
+
 Convert a juju bundle to a diagram.
 
 ## Install

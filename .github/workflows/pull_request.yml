@@ -1,0 +1,12 @@
+name: Pull Requests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pull-request:
+    name: PR
+    uses: sed-i/juju-graph/.github/workflows/_quality-checks.yml@main
+    secrets: inherit

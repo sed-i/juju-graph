@@ -6,6 +6,8 @@ Convert a juju bundle to a diagram.
 
 ## Install
 ```bash
+sudo snap install juju-graph --edge
+# or
 cargo install --git https://github.com/sed-i/juju-graph
 ```
 
